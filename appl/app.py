@@ -12,8 +12,11 @@ db.init_app(app)
 
 
 def init_app():
+    from appl.routes import init_routes
+    init_routes(app)
     with app.app_context():
         db.create_all()
+
     return app
 
 

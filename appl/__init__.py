@@ -8,6 +8,4 @@ def create_app():
 
     app.config.from_object('appl.config.Config')
 
-    # from appl.routes import init_routes
-    # init_routes(app)
     return app
