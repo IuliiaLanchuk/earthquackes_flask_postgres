@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=<<for>>, initial-scale=1.0"/>
+<title>Earthquakes</title>
+</head>
+<body>
+<div class="container">
+<h1>Possible earthquakes in max radius 1000km are :</h1>
+    {% for earthquake in earthquakes %}
+
+    <ul id="earthquake">
+      <li>
+        <span class="field-name">Place:</span>
+        <span class="field-value">{{ earthquake['place']}}</span>
+      </li>
+      <li>
+        <span class="field-name">Magnitude:</span>
+        <span class="field-value">{{ earthquake['magnitude'] }}</span>
+      </li>
+        <li>
+        <span class="field-name">Day:</span>
+        <span class="field-value">{{ earthquake['day'] }}</span>
+      </li>
+        <li>
+        <span class="field-name">Url:</span>
+        <span class="field-value">{{ earthquake['url'] }}</span>
+      </li>
+        <li>
+        <span class="field-name">Tsunami:</span>
+        <span class="field-value">{{ earthquake['tsunami'] }}</span>
+      </li>
+        <li>
+        <span class="field-name">Type:</span>
+        <span class="field-value">{{ earthquake['type'] }}</span>
+      </li>
+    </ul>
+    {% endfor %}
+  </div>
+</body>
+</html>

@@ -1,4 +1,6 @@
 import os
+import datetime
+from typing import List
 
 from flask import jsonify, request, make_response, render_template, redirect, url_for
 import requests
@@ -91,3 +93,66 @@ def init_routes(app):
         if request.method == 'GET':
             return render_template('get_weather.html')
         return redirect(url_for('print_weather_by_city', city_=request.form['city']))
+
+
+
+
+
+
+
+
+
+    def possible_earthquakes_data_format(earthquakes: List) -> List:
+        possible_earthquakes = []
+        hyperlink_format = '<a href="{link}">{text}</a>'
+        for earthquake in earthquakes:
+            data = earthquake['properties']
+            possible_earthquakes.append({
+                'place': data['place'],
+                'magnitude': data['mag'],
+                'day': datetime.datetime.fromtimestamp(data['time'] / 1000.0).isoformat()[:10],
+                'url': hyperlink_format.format(link=data['url'], text=data['url']),
+                'tsunami': 'yes' if data['tsunami'] == 1 else 'no',
+                'type': data['type']
+            })
+        return possible_earthquakes
+
+    def reach_data_earthquakes_for_week(city: Location) -> List:
+        day_today = datetime.date.today()
+        base_url = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&'
+        earthquake_url = base_url + f'starttime={day_today}&endtime={day_today + datetime.timedelta(days=6)}& \
+                                         lat={city.latitude}&lon={city.longitude}&maxradiuskm=1000'
+        return requests.get(earthquake_url).json()['features']
+
+    @app.route('/earthquakes/<city_>')
+    def get_earthquakes_by_city(city_):
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM location WHERE city='{city_}'")
+        existing_city_query = cur.fetchone()
+
+
+        if existing_city_query:
+            existing_city = Location(city=existing_city_query[0], latitude=existing_city_query[1],
+                                     longitude=existing_city_query[2])
+
+            earthquakes = reach_data_earthquakes_for_week(existing_city)
+            if earthquakes:
+                close_db_connection(conn, cur)
+                return render_template(
+                    'output_earthquakes_format.jinja2',
+                    earthquakes=possible_earthquakes_data_format(earthquakes),
+                    title="Show Earthquakes"
+                )
+            close_db_connection(conn, cur)
+            return make_response(
+                f'For city {existing_city.city} there are no possible earthquakes in max radius 1000km')
+        new_city = create_city_in_location_table(cur, city_)[0]
+        close_db_connection(conn, cur)
+        return get_earthquakes_by_city(new_city.city)
+
+    @app.route('/earthquakes', methods=['GET', 'POST'])
+    def enter_city_to_get_earthquakes():
+        if request.method == 'GET':
+            return render_template('input_city_for_earthquakes.html')
+        return redirect(url_for('get_earthquakes_by_city', city_=request.form['city']))
