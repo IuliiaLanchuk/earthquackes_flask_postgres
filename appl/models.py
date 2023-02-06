@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 
-from appl.app import db
+from appl import db
 
 
 class Saver:
