@@ -27,7 +27,7 @@ def init_routes(app):
         cur.execute('INSERT INTO location (city, latitude, longitude) '
                     'VALUES (%s, %s, %s)',
                     (city, coords['lat'], coords['lon']))
-        return cur
+        return Location(city=city, latitude=coords['lat'], longitude=coords['lon']), cur
 
     @app.route('/coordinates/<city_>')
     def print_coordinates(city_):
@@ -60,3 +60,34 @@ def init_routes(app):
         if request.method == 'GET':
             return render_template('get_city_coordinates.html')
         return redirect(url_for('print_coordinates', city_=request.form['city']))
+
+
+
+
+
+
+    def get_weather_today(city):
+        url = 'https://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&units=metric&appid={}'.format(
+            city.latitude, city.longitude, API_KEY_WEATHER)
+        return requests.get(url).json()['main']
+
+    @app.route('/weather/<city_>')
+    def print_weather_by_city(city_):
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM location WHERE city='{city_}'")
+        existing_city_query = cur.fetchone()
+        if existing_city_query:
+            location = Location(city=existing_city_query[0], latitude=existing_city_query[1],
+                                     longitude=existing_city_query[2])
+        else:
+            location = create_city_in_location_table(cur, city_)[0]
+        close_db_connection(conn, cur)
+        return make_response(get_weather_today(location))
+
+
+    @app.route('/weather', methods=['GET', 'POST'])
+    def enter_city_to_get_weather():
+        if request.method == 'GET':
+            return render_template('get_weather.html')
+        return redirect(url_for('print_weather_by_city', city_=request.form['city']))
