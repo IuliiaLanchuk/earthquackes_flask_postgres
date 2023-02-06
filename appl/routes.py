@@ -1,5 +1,7 @@
 from flask import jsonify
 
+
+
 def init_routes(app):
 
     @app.route("/api", methods=["GET"])
@@ -9,3 +11,7 @@ def init_routes(app):
             "success": True,
             "data": None
         }), 200
+
+    import psycopg2 as psycopg2
+
+
