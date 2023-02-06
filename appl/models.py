@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+from appl.app import db
 
 
 class Saver:
@@ -13,7 +13,7 @@ class User(db.Model, Saver):
     id = db.Column(db.Integer, primary_key = True)
     nickname = db.Column(db.String(64), unique = True)
     email = db.Column(db.String(120), unique = True)
-    city = db.Column(db.String(51), db.ForeignKey('location.city'))
+    city = db.Column(db.String(51))
 
     def __repr__(self):
         return '<User %r> from <%r>' % (self.nickname, self.city)

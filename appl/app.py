@@ -1,12 +1,26 @@
+from flask_sqlalchemy import SQLAlchemy
+
 from appl import create_app
-from appl.models import db
+
 
 from flask_migrate import Migrate
 
 app = create_app()
+
+db = SQLAlchemy()
 db.init_app(app)
-migrate = Migrate(app, db)
+
+
+def init_app():
+    with app.app_context():
+        db.create_all()
+    return app
+
+
+migrate = Migrate(app=app, db=db)
+
+from appl import models
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    init_app().run(debug=True)

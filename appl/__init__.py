@@ -6,8 +6,8 @@ def create_app():
 
     app = Flask(__name__)
 
-    app.config.from_pyfile(filename='config.py')
+    app.config.from_object('appl.config.Config')
 
-    from appl.routes import init_routes
-    init_routes(app)
+    # from appl.routes import init_routes
+    # init_routes(app)
     return app
